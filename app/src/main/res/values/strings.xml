@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">FitnessApp</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Settings -->
+    <string name="calories_byCalories">Calories</string>
+    <string name="protein_byCalories">Protein %</string>
+    <string name="carbs_byCalories">Carbs %</string>
+    <string name="fats_byCalories">Fats %</string>
+    <string name="fiber_byCalories">Fiber</string>
+</resources>
