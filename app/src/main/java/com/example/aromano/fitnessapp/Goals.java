@@ -10,28 +10,29 @@ public class Goals {
     private float fats;
     private float fiber;
     private boolean byCalories;
+    // TODO: see if fields are all filled and with the correct data, percentages etc..
 
-    Goals(float acalories, float aprotein, float acarbs, float afats, float afiber, boolean abyCalories) {
-        this.byCalories = abyCalories;
+    Goals(float calories, float protein, float carbs, float fats, float fiber, boolean byCalories) {
+        this.byCalories = byCalories;
 
         if(this.isByCalories()) {
-            this.calories = acalories;
-            // aprotein, acarbs, etc.. are percentages of those calories
-            this.protein = (this.getCalories() / 4) * aprotein;
-            this.carbs = (this.getCalories() / 4) * acarbs;
-            this.fats = (this.getCalories() / 9) * afats;
-            this.fiber = afiber;
+            this.calories = calories;
+            // protein, carbs, etc.. are percentages of those calories
+            this.protein = (this.getCalories() / 4) * protein;
+            this.carbs = (this.getCalories() / 4) * carbs;
+            this.fats = (this.getCalories() / 9) * fats;
+            this.fiber = fiber;
         } else {
-            this.protein = aprotein;
-            this.carbs = acarbs;
-            this.fats = afats;
-            this.fiber = afiber;
+            this.protein = protein;
+            this.carbs = carbs;
+            this.fats = fats;
+            this.fiber = fiber;
 
             this.calories = (this.getProtein() * 4) + (this.getCarbs() * 4) + (this.getFats() * 9);
         }
-
     }
 
+    // TODO: delete updateGoals, and change funcionality to use sololy the database
     public void updateGoals(float calories, float aprotein, float acarbs, float afats, float afiber, boolean abyCalories) {
         this.byCalories = abyCalories;
 

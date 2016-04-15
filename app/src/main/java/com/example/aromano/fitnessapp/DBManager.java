@@ -118,6 +118,7 @@ public class DBManager extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    // TODO: change this so it accepts a date as a parameter, and displays that day's diary
     // Get today diary macros
     public Cursor getTodayDiaryEntries() {
         String targetDate, targetHour;
@@ -229,61 +230,25 @@ public class DBManager extends SQLiteOpenHelper {
         db.update(tb_goals, cv, col_goals_idgoals+"=1", null);
     }
 
+    // TODO: allow null entries on all the methods
     // Add ingredient
     public void addIngredient(Ingredient ingredient) {
-        ContentValues values = new ContentValues();
+        ContentValues cv = new ContentValues();
 
-        values.putNull(col_ingredient_idingredient);
-        values.put(col_ingredient_name, ingredient.getName());
-        values.put(col_ingredient_calories, ingredient.getCalories());
-        values.put(col_ingredient_protein, ingredient.getProtein());
-        values.put(col_ingredient_carbs, ingredient.getCarbs());
-        values.put(col_ingredient_fats, ingredient.getFats());
-        values.put(col_ingredient_fiber, ingredient.getFiber());
+        cv.putNull(col_ingredient_idingredient);
+        cv.put(col_ingredient_name, ingredient.getName());
+        cv.put(col_ingredient_calories, ingredient.getCalories());
+        cv.put(col_ingredient_protein, ingredient.getProtein());
+        cv.put(col_ingredient_carbs, ingredient.getCarbs());
+        cv.put(col_ingredient_fats, ingredient.getFats());
+        cv.put(col_ingredient_fiber, ingredient.getFiber());
 
         SQLiteDatabase db = getWritableDatabase();
-        db.insert(tb_ingredient, null, values);
+        db.insert(tb_ingredient, null, cv);
         db.close();
     }
 
-    // Delete ingredient
-    public void deleteIngredient(Ingredient ingredient) {
-        //int id = ingredient.getId();
-
-        SQLiteDatabase db = getWritableDatabase();
-        //db.execSQL("delete from " + tb_ingredient + " where " + col_ingredient_idingredient + "=\"" + id + "\";");
-    }
-
-    // convert back to object
-    public List<Ingredient> getIngredients() {
-        List<Ingredient> entries = new ArrayList<>();
-        SQLiteDatabase db = getWritableDatabase();
-        String query = "select * from " + tb_ingredient + " where 1";
-
-        try {
-            Cursor c = db.rawQuery(query, null);
-            while(c.moveToNext()) {
-                int idingredient = c.getInt(c.getColumnIndex(col_ingredient_idingredient));
-                String name = c.getString(c.getColumnIndex(col_ingredient_name));
-                float calories = c.getFloat(c.getColumnIndex(col_ingredient_calories));
-                float protein = c.getFloat(c.getColumnIndex(col_ingredient_protein));
-                float carbs = c.getFloat(c.getColumnIndex(col_ingredient_carbs));
-                float fats = c.getFloat(c.getColumnIndex(col_ingredient_fats));
-                float fiber = c.getFloat(c.getColumnIndex(col_ingredient_fiber));
-
-                Ingredient ingredient = new Ingredient(idingredient, name, calories, protein, carbs, fats, fiber);
-                entries.add(ingredient);
-            }
-        } catch (Exception ex) {
-
-        } finally {
-            db.close();
-        }
-
-        return entries;
-    }
-
-    public Cursor getIngredientsCursor() {
+    public Cursor getIngredients() {
         SQLiteDatabase db = getWritableDatabase();
         String query = "select * from " + tb_ingredient + " where 1";
         Cursor cursor;
@@ -292,6 +257,28 @@ public class DBManager extends SQLiteOpenHelper {
         //db.close();
 
         return cursor;
+    }
+
+    // TODO: implement updateIngredient method
+    public void updateIngredient(int _id, String name, float calories, float protein, float carbs, float fats, float fiber) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(col_ingredient_name, name);
+        cv.put(col_ingredient_calories, calories);
+        cv.put(col_ingredient_protein, protein);
+        cv.put(col_ingredient_carbs, carbs);
+        cv.put(col_ingredient_fats, fats);
+        cv.put(col_ingredient_fiber, fiber);
+
+        db.update(tb_ingredient, cv, col_ingredient_idingredient+ "=" +_id, null);
+    }
+
+
+    // TODO: implement method in layout
+    public void deleteIngredient(int _id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(tb_ingredient, col_ingredient_idingredient+"="+ _id, null);
     }
 
 

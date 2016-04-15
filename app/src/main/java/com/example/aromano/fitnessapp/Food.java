@@ -9,7 +9,7 @@ import java.util.List;
  * Created by aRomano on 01/04/2016.
  */
 abstract public class Food {
-    static ArrayList<Ingredient> Ingredients = new ArrayList<>();
+    // TODO review the need for this class
     static ArrayList<Dish> Dishes = new ArrayList<>();
     static ArrayList<Meal> Meals = new ArrayList<>();
     static ArrayList<Portion> Portions = new ArrayList<>();

@@ -9,6 +9,7 @@ import java.util.ArrayList;
  * Created by aRomano on 30/03/2016.
  */
 public class Consumed {
+    // TODO: check if needed
     private float calories;
     private float protein;
     private float carbs;

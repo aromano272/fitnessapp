@@ -11,15 +11,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 public class  MainActivity extends AppCompatActivity {
     final CalorieCalculator calorieCalculator = new CalorieCalculator();
-    TextView et_totalkcal;
+    TextView tv_remainingcalories;
     ListView lv_food;
     ListView lv_consumed;
     DBManager db = new DBManager(this);
@@ -30,51 +28,60 @@ public class  MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_view2);
 
-        et_totalkcal = (TextView) findViewById(R.id.tv_totalkcal);
+        tv_remainingcalories = (TextView) findViewById(R.id.tv_remainingcalories);
         lv_food = (ListView) findViewById(R.id.lv_food);
         lv_consumed = (ListView) findViewById(R.id.lv_consumed);
 
         float remainingCalories = calorieCalculator.getRemainingCalories();
 
-        et_totalkcal.setText(String.valueOf(remainingCalories));
+        tv_remainingcalories.setText(String.valueOf(remainingCalories));
+
         populateDiaryList();
         populateFoodList();
+        populateRemainingMacros();
 
-        db.getIngredients();
         float[] goals = db.getGoals();
         calorieCalculator.Goals.updateGoals(goals[0], goals[1], goals[2], goals[3], goals[4], false);
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        //updateRemainingCalories();
     }
+    // TODO: extend the functionality to display full macros
+    private void populateRemainingMacros() {
+        Cursor cursor = db.getTodayDiaryEntries();
+        float calories = 0, protein= 0, carbs= 0, fats= 0, fiber= 0;
 
-    private void updateRemainingCalories(float[] consumed) {
-        float[] macros = db.getGoals();
+        while(cursor.moveToNext()) {
+            calories += cursor.getFloat(cursor.getColumnIndex("calories"));
+            protein += cursor.getFloat(cursor.getColumnIndex("protein"));
+            carbs += cursor.getFloat(cursor.getColumnIndex("carbs"));
+            fats += cursor.getFloat(cursor.getColumnIndex("fats"));
+            fiber += cursor.getFloat(cursor.getColumnIndex("fiber"));
+        }
 
-        float remainingCalories = macros[0] - consumed[0];
+        cursor.close();
 
-        et_totalkcal.setText(String.valueOf(remainingCalories));
+        tv_remainingcalories.setText(String.valueOf(calories));
     }
 
 
     CursorAdapter foodAdapter;
 
     private void populateFoodList() {
-        foodAdapter = new FoodAdapter(this, db.getIngredientsCursor(), 0);
+        foodAdapter = new FoodAdapter(this, db.getIngredients(), 0);
         lv_food.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = (Cursor) lv_food.getItemAtPosition(position);
+                // TODO: add a way for the user to add the ammount of servings
                 db.addDiaryEntry(1, cursor.getInt(cursor.getColumnIndex("_id")));
 
                 Log.d("onitemclick", String.valueOf(cursor.getInt(cursor.getColumnIndex("_id"))));
-                //((CursorAdapter) lv_food.getAdapter()).notifyDataSetChanged();
                 populateDiaryList();
+                populateRemainingMacros();
             }
         });
         lv_food.setAdapter(foodAdapter);
@@ -91,10 +98,8 @@ public class  MainActivity extends AppCompatActivity {
                 Cursor cursor = (Cursor) lv_consumed.getItemAtPosition(position);
                 db.deleteDiaryEntry(cursor.getInt(cursor.getColumnIndex("_id")));
 
-                //Log.d("onitemclick", String.valueOf(cursor.getInt(cursor.getColumnIndex("_id"))));
-                //((CursorAdapter) lv_consumed.getAdapter()).notifyDataSetChanged();
-                //updateRemainingCalories();
                 populateDiaryList();
+                populateRemainingMacros();
             }
         });
         lv_consumed.setAdapter(diaryAdapter);
@@ -127,7 +132,7 @@ public class  MainActivity extends AppCompatActivity {
                 String name = extras.getString("name");
                 float[] macros = extras.getFloatArray("macros");
 
-                Ingredient ingredient = new Ingredient(Food.Ingredients.size(), name, macros[0], macros[1], macros[2], macros[3], macros[4]);
+                Ingredient ingredient = new Ingredient(name, macros[0], macros[1], macros[2], macros[3], macros[4]);
 
                 db.addIngredient(ingredient);
 
@@ -162,7 +167,7 @@ public class  MainActivity extends AppCompatActivity {
 
     // debug
     public void debug_printSQLTables() {
-        Cursor cursorIngredients = db.getIngredientsCursor();
+        Cursor cursorIngredients = db.getIngredients();
         Cursor cursorDiary = db.getTodayDiaryEntries();
 
         db.debug_printTable(cursorDiary);
