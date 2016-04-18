@@ -232,16 +232,37 @@ public class DBManager extends SQLiteOpenHelper {
 
     // TODO: allow null entries on all the methods
     // Add ingredient
-    public void addIngredient(Ingredient ingredient) {
+    public void addIngredient(String name, float[] macros, boolean[] givenMacros) {
         ContentValues cv = new ContentValues();
 
         cv.putNull(col_ingredient_idingredient);
-        cv.put(col_ingredient_name, ingredient.getName());
-        cv.put(col_ingredient_calories, ingredient.getCalories());
-        cv.put(col_ingredient_protein, ingredient.getProtein());
-        cv.put(col_ingredient_carbs, ingredient.getCarbs());
-        cv.put(col_ingredient_fats, ingredient.getFats());
-        cv.put(col_ingredient_fiber, ingredient.getFiber());
+        cv.put(col_ingredient_name, name);
+
+        if(givenMacros[0]) {
+            cv.put(col_goals_calories, macros[0]);
+        } else {
+            cv.putNull(col_goals_calories);
+        }
+        if(givenMacros[1]) {
+            cv.put(col_goals_protein, macros[1]);
+        } else {
+            cv.putNull(col_goals_protein);
+        }
+        if(givenMacros[2]) {
+            cv.put(col_goals_carbs, macros[2]);
+        } else {
+            cv.putNull(col_goals_carbs);
+        }
+        if(givenMacros[3]) {
+            cv.put(col_goals_fats, macros[3]);
+        } else {
+            cv.putNull(col_goals_fats);
+        }
+        if(givenMacros[4]) {
+            cv.put(col_goals_fiber, macros[4]);
+        } else {
+            cv.putNull(col_goals_fiber);
+        }
 
         SQLiteDatabase db = getWritableDatabase();
         db.insert(tb_ingredient, null, cv);
@@ -259,17 +280,37 @@ public class DBManager extends SQLiteOpenHelper {
         return cursor;
     }
 
-    // TODO: implement updateIngredient method
-    public void updateIngredient(int _id, String name, float calories, float protein, float carbs, float fats, float fiber) {
+    public void updateIngredient(int _id, String name, float[] macros, boolean[] givenMacros) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
 
         cv.put(col_ingredient_name, name);
-        cv.put(col_ingredient_calories, calories);
-        cv.put(col_ingredient_protein, protein);
-        cv.put(col_ingredient_carbs, carbs);
-        cv.put(col_ingredient_fats, fats);
-        cv.put(col_ingredient_fiber, fiber);
+
+        if(givenMacros[0]) {
+            cv.put(col_goals_calories, macros[0]);
+        } else {
+            cv.putNull(col_goals_calories);
+        }
+        if(givenMacros[1]) {
+            cv.put(col_goals_protein, macros[1]);
+        } else {
+            cv.putNull(col_goals_protein);
+        }
+        if(givenMacros[2]) {
+            cv.put(col_goals_carbs, macros[2]);
+        } else {
+            cv.putNull(col_goals_carbs);
+        }
+        if(givenMacros[3]) {
+            cv.put(col_goals_fats, macros[3]);
+        } else {
+            cv.putNull(col_goals_fats);
+        }
+        if(givenMacros[4]) {
+            cv.put(col_goals_fiber, macros[4]);
+        } else {
+            cv.putNull(col_goals_fiber);
+        }
 
         db.update(tb_ingredient, cv, col_ingredient_idingredient+ "=" +_id, null);
     }

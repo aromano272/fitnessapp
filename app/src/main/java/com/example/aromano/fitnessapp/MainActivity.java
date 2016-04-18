@@ -16,7 +16,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class  MainActivity extends AppCompatActivity {
-    final CalorieCalculator calorieCalculator = new CalorieCalculator();
     TextView tv_remainingcalories;
     ListView lv_food;
     ListView lv_consumed;
@@ -32,16 +31,9 @@ public class  MainActivity extends AppCompatActivity {
         lv_food = (ListView) findViewById(R.id.lv_food);
         lv_consumed = (ListView) findViewById(R.id.lv_consumed);
 
-        float remainingCalories = calorieCalculator.getRemainingCalories();
-
-        tv_remainingcalories.setText(String.valueOf(remainingCalories));
-
         populateDiaryList();
         populateFoodList();
         populateRemainingMacros();
-
-        float[] goals = db.getGoals();
-        calorieCalculator.Goals.updateGoals(goals[0], goals[1], goals[2], goals[3], goals[4], false);
     }
 
     @Override
@@ -51,15 +43,20 @@ public class  MainActivity extends AppCompatActivity {
     }
     // TODO: extend the functionality to display full macros
     private void populateRemainingMacros() {
+        float[] goals = db.getGoals();
         Cursor cursor = db.getTodayDiaryEntries();
-        float calories = 0, protein= 0, carbs= 0, fats= 0, fiber= 0;
+        float calories = goals[0];
+        float protein = goals[1];
+        float carbs = goals[2];
+        float fats = goals[3];
+        float fiber = goals[4];
 
         while(cursor.moveToNext()) {
-            calories += cursor.getFloat(cursor.getColumnIndex("calories"));
-            protein += cursor.getFloat(cursor.getColumnIndex("protein"));
-            carbs += cursor.getFloat(cursor.getColumnIndex("carbs"));
-            fats += cursor.getFloat(cursor.getColumnIndex("fats"));
-            fiber += cursor.getFloat(cursor.getColumnIndex("fiber"));
+            calories -= cursor.getFloat(cursor.getColumnIndex("calories"));
+            protein -= cursor.getFloat(cursor.getColumnIndex("protein"));
+            carbs -= cursor.getFloat(cursor.getColumnIndex("carbs"));
+            fats -= cursor.getFloat(cursor.getColumnIndex("fats"));
+            fiber -= cursor.getFloat(cursor.getColumnIndex("fiber"));
         }
 
         cursor.close();
@@ -124,17 +121,15 @@ public class  MainActivity extends AppCompatActivity {
                 float[] macros = extras.getFloatArray("macros");
 
                 db.updateGoals(macros);
-                //updateRemainingCalories();
             }
         } else if (requestCode == 2) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 Bundle extras = data.getBundleExtra("extras");
                 String name = extras.getString("name");
                 float[] macros = extras.getFloatArray("macros");
+                boolean[] givenMacros = extras.getBooleanArray("givenMacros");
 
-                Ingredient ingredient = new Ingredient(name, macros[0], macros[1], macros[2], macros[3], macros[4]);
-
-                db.addIngredient(ingredient);
+                db.addIngredient(name, macros, givenMacros);
 
                 populateFoodList();
             }
