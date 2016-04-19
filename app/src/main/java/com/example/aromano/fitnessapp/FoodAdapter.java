@@ -30,13 +30,8 @@ public class FoodAdapter extends ResourceCursorAdapter {
         Button btn_add = (Button) view.findViewById(R.id.btn_add);
 
 
-        // TODO: implement button functionality on listview buttons
-        // http://www.migapro.com/click-events-listview-gridview/
-
         tv_name.setText(cursor.getString(cursor.getColumnIndex("name")));
 
-        // TODO: leave decrease and increase methods internal to the adapter and only perfromItemClick on btn_add
-        // TODO: find a way to pass the et_servings value through performItemClick
         btn_decreaseServings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -44,7 +39,7 @@ public class FoodAdapter extends ResourceCursorAdapter {
                 servings -= 0.05d;
 
                 DecimalFormat df = new DecimalFormat("#.##");
-                df.setRoundingMode(RoundingMode.UP);
+                df.setRoundingMode(RoundingMode.HALF_EVEN);
 
                 et_servings.setText(df.format(servings));
             }
@@ -57,7 +52,7 @@ public class FoodAdapter extends ResourceCursorAdapter {
                 servings += 0.05d;
 
                 DecimalFormat df = new DecimalFormat("#.##");
-                df.setRoundingMode(RoundingMode.UP);
+                df.setRoundingMode(RoundingMode.HALF_EVEN);
 
                 et_servings.setText(df.format(servings));
             }
@@ -70,11 +65,13 @@ public class FoodAdapter extends ResourceCursorAdapter {
                 ListView listView = (ListView) parentRow.getParent();
                 final int position = listView.getPositionForView(parentRow);
 
-                Cursor cursor = (Cursor) listView.getItemAtPosition(position);
+                //Cursor cursor = (Cursor) listView.getItemAtPosition(position);
 
-                float servings = Float.parseFloat(et_servings.getText().toString());
+                //float servings = Float.parseFloat(et_servings.getText().toString());
+                // TODO: try to find a better solution to pass data from adapter to the view
+                // TODO: turns out we can access the layout from mainactivity, will leave this here till further testing
                 // send servings through id, ugly but works
-                listView.performItemClick(v, position, (long)(servings * 100)); // Let the event be handled in onItemClick()
+                listView.performItemClick(v, position, 0); // Let the event be handled in onItemClick()
             }
         });
 

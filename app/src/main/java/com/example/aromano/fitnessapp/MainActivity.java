@@ -59,7 +59,6 @@ public class  MainActivity extends AppCompatActivity {
             fats -= cursor.getFloat(cursor.getColumnIndex("fats"));
             fiber -= cursor.getFloat(cursor.getColumnIndex("fiber"));
         }
-
         cursor.close();
 
         tv_remainingcalories.setText(String.valueOf(calories));
@@ -75,14 +74,20 @@ public class  MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int clickedView = view.getId();
+                // a view enviado pelo performItemClick eh a view do btn_add, logo temos que ir ao parent para conseguirmos aceder ao et_servings
+                // de cada listitem, utilizando o parent passado no onItemClick nao conseguimos la chegar
+                View parentView = (View) view.getParent();
+                EditText et_servings = (EditText) parentView.findViewById(R.id.et_servings);
                 Cursor cursor = (Cursor) lv_food.getItemAtPosition(position);
+
 
                 if(clickedView == R.id.btn_add) {
                     // get the data from the id sent from performItemClick(), ugly but works
-                    float servings = ((float) id) / 100;
+                    //float servings = ((float) id) / 100;
+                    float servings = Float.parseFloat(et_servings.getText().toString());
+                    Log.d("et_servings", String.valueOf(servings));
 
                     db.addDiaryEntry(servings, cursor.getInt(cursor.getColumnIndex("_id")));
-                    Log.d("servings", String.valueOf(servings));
                 }
 
                 populateDiaryList();
