@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -70,13 +71,20 @@ public class  MainActivity extends AppCompatActivity {
     private void populateFoodList() {
         foodAdapter = new FoodAdapter(this, db.getIngredients(), 0);
         lv_food.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            // TODO: fix the double click sound when adding item, maybe 2 onClicks are being triggered
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int clickedView = view.getId();
                 Cursor cursor = (Cursor) lv_food.getItemAtPosition(position);
-                // TODO: add a way for the user to add the ammount of servings
-                db.addDiaryEntry(1, cursor.getInt(cursor.getColumnIndex("_id")));
 
-                Log.d("onitemclick", String.valueOf(cursor.getInt(cursor.getColumnIndex("_id"))));
+                if(clickedView == R.id.btn_add) {
+                    // get the data from the id sent from performItemClick(), ugly but works
+                    float servings = ((float) id) / 100;
+
+                    db.addDiaryEntry(servings, cursor.getInt(cursor.getColumnIndex("_id")));
+                    Log.d("servings", String.valueOf(servings));
+                }
+
                 populateDiaryList();
                 populateRemainingMacros();
             }
@@ -88,7 +96,6 @@ public class  MainActivity extends AppCompatActivity {
 
     private void populateDiaryList() {
         diaryAdapter = new DiaryAdapter(this, db.getTodayDiaryEntries(), 0);
-
         lv_consumed.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

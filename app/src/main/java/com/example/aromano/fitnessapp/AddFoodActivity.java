@@ -49,26 +49,26 @@ public class AddFoodActivity extends AppCompatActivity {
         // default value for servings if omitted
         float servings = 1;
 
-        if(servings_str != "") {
+        if(servings_str.isEmpty()) {
             servings = Float.parseFloat(servings_str);
         }
-        if(calories_str != "") {
+        if(calories_str.isEmpty()) {
             macros[0] = Float.parseFloat(calories_str) / servings;
             givenMacros[0] = true;
         }
-        if(protein_str != "") {
+        if(protein_str.isEmpty()) {
             macros[1] = Float.parseFloat(protein_str) / servings;
             givenMacros[1] = true;
         }
-        if(carbs_str != "") {
+        if(carbs_str.isEmpty()) {
             macros[2] = Float.parseFloat(carbs_str) / servings;
             givenMacros[2] = true;
         }
-        if(fats_str != "") {
+        if(fats_str.isEmpty()) {
             macros[3] = Float.parseFloat(fats_str) / servings;
             givenMacros[3] = true;
         }
-        if(fiber_str != "") {
+        if(fiber_str.isEmpty()) {
             macros[4] = Float.parseFloat(fiber_str) / servings;
             givenMacros[4] = true;
         }

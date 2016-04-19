@@ -150,11 +150,11 @@ public class DBManager extends SQLiteOpenHelper {
                 "name as 'ingredientname'," +
                 "date," +
                 "servings," +
-                "round(calories / servings, 1) as 'calories'," +
-                "round(protein / servings, 1) as 'protein'," +
-                "round(carbs / servings, 1) as 'carbs'," +
-                "round(fats / servings, 1) as 'fats'," +
-                "round(fiber / servings, 1) as 'fiber' from tb_diary " +
+                "round(calories * servings, 1) as 'calories'," +
+                "round(protein * servings, 1) as 'protein'," +
+                "round(carbs * servings, 1) as 'carbs'," +
+                "round(fats * servings, 1) as 'fats'," +
+                "round(fiber * servings, 1) as 'fiber' from tb_diary " +
                 "inner join tb_ingredient on tb_diary.idingredient = tb_ingredient._id " +
                 "where date > '" + targetTimestamp + "';";
 
