@@ -280,6 +280,15 @@ public class DBManager extends SQLiteOpenHelper {
         return cursor;
     }
 
+    public Cursor getIngredients(int _id) {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "select * from " + tb_ingredient + " where _id =" + _id;
+        Cursor cursor;
+        cursor = db.rawQuery(query, null);
+
+        return cursor;
+    }
+
     public void updateIngredient(int _id, String name, float[] macros, boolean[] givenMacros) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();

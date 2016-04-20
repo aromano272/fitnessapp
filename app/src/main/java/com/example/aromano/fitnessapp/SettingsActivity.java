@@ -79,30 +79,10 @@ public class SettingsActivity extends AppCompatActivity {
         tv_fats_type.setText("g");
     }
 
-
-
     private void saveSettings() {
         saveGoals();
     }
-/*
-    private void saveGoals() {
-        float calories = Float.parseFloat(et_calories.getText().toString());
-        float protein = Float.parseFloat(et_protein.getText().toString());
-        float carbs = Float.parseFloat(et_carbs.getText().toString());
-        float fats = Float.parseFloat(et_fats.getText().toString());
-        float fiber = Float.parseFloat(et_fiber.getText().toString());
-        float[] macros = { calories, protein, carbs, fats, fiber };
 
-        Bundle extras = new Bundle();
-        extras.putFloatArray("macros", macros);
-        extras.putBoolean("byCalories", byCalories);
-
-        Intent returnIntent = new Intent();
-        returnIntent.putExtra("extras", extras);
-        setResult(Activity.RESULT_OK, returnIntent);
-        finish();
-    }
-*/
     private void saveGoals() {
         float calories = Float.parseFloat(et_calories.getText().toString());
         float protein = Float.parseFloat(et_protein.getText().toString());
