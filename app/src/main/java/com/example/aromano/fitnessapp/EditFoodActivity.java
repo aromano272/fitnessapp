@@ -22,6 +22,7 @@ public class EditFoodActivity extends AppCompatActivity {
     EditText et_fiber;
     int _id;
 
+    // TODO: add barcode functionality like on AddFoodActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +52,6 @@ public class EditFoodActivity extends AppCompatActivity {
     }
 
     private void deleteFood() {
-        // TODO: add confirmation before deleting
         AlertDialog dialog = new AlertDialog.Builder(this)
             .setTitle("Delete ingredient.")
             .setMessage("Deleting an ingredient will delete all of that item's diary entries.")
@@ -119,6 +119,7 @@ public class EditFoodActivity extends AppCompatActivity {
         extras.putString("name", name);
         extras.putFloatArray("macros", macros);
         extras.putBooleanArray("givenMacros", givenMacros);
+
 
         Intent returnIntent = new Intent();
         returnIntent.putExtra("extras", extras);

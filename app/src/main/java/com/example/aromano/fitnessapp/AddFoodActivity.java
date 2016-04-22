@@ -17,6 +17,8 @@ public class AddFoodActivity extends AppCompatActivity {
     EditText et_carbs;
     EditText et_fats;
     EditText et_fiber;
+    String barcodeformat = "";
+    String barcodecontent = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,13 @@ public class AddFoodActivity extends AppCompatActivity {
         et_carbs = (EditText) findViewById(R.id.et_carbs);
         et_fats = (EditText) findViewById(R.id.et_fats);
         et_fiber = (EditText) findViewById(R.id.et_fiber);
+
+        Intent intent = this.getIntent();
+        if(intent.hasExtra("extras")) {
+            Bundle extras = intent.getBundleExtra("extras");
+            barcodeformat = extras.getString("barcodeformat");
+            barcodecontent = extras.getString("barcodecontent");
+        }
     }
 
     private void addFood() {
@@ -75,6 +84,8 @@ public class AddFoodActivity extends AppCompatActivity {
         extras.putString("name", name);
         extras.putFloatArray("macros", macros);
         extras.putBooleanArray("givenMacros", givenMacros);
+        extras.putString("barcodeformat", barcodeformat);
+        extras.putString("barcodecontent", barcodecontent);
 
         Intent returnIntent = new Intent();
         returnIntent.putExtra("extras", extras);

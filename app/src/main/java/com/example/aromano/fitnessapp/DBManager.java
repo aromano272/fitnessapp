@@ -16,6 +16,8 @@ import java.util.List;
  * Created by aRomano on 01/04/2016.
  */
 public class DBManager extends SQLiteOpenHelper {
+    //TODO: add a way to close database on MainActivity after handling a cursor
+    //http://stackoverflow.com/questions/13249129/close-the-cursor-and-db-when-use-the-sqlite-database
     private static DBManager sInstance;
 
     // ...
@@ -32,7 +34,7 @@ public class DBManager extends SQLiteOpenHelper {
 
     private static final int wakeupTime = 8;
 
-    private static final int DATABASE_VERSION = 32;
+    private static final int DATABASE_VERSION = 35;
     private static final String DATABASE_NAME = "fitnessapp.db";
     // tb_ingredient
     public static final String tb_ingredient = "tb_ingredient";
@@ -43,6 +45,9 @@ public class DBManager extends SQLiteOpenHelper {
     public static final String col_ingredient_carbs = "carbs";
     public static final String col_ingredient_fats = "fats";
     public static final String col_ingredient_fiber = "fiber";
+    public static final String col_ingredient_barcodeformat = "barcodeformat";
+    public static final String col_ingredient_barcodecontent = "barcodecontent";
+
     // tb_diary
     public static final String tb_diary = "tb_diary";
     public static final String col_diary_iddiary = "_id";
@@ -75,7 +80,9 @@ public class DBManager extends SQLiteOpenHelper {
                 col_ingredient_protein + " float," +
                 col_ingredient_carbs + " float," +
                 col_ingredient_fats + " float," +
-                col_ingredient_fiber + " float" +
+                col_ingredient_fiber + " float," +
+                col_ingredient_barcodeformat + " varchar(20)," +
+                col_ingredient_barcodecontent + " varchar(20) unique" +
                 ");";
         String create_tb_diary = "create table " + tb_diary + " (" +
                 col_diary_iddiary + " integer primary key," +
@@ -159,6 +166,7 @@ public class DBManager extends SQLiteOpenHelper {
                 "where date > '" + targetTimestamp + "';";
 
         Cursor cursor = db.rawQuery(query, null);
+        db.close();
 
         return cursor;
     }
@@ -184,6 +192,7 @@ public class DBManager extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
 
         db.delete(tb_diary, col_diary_iddiary+"="+_id, null);
+        db.close();
     }
 
 
@@ -228,11 +237,12 @@ public class DBManager extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getWritableDatabase();
         db.update(tb_goals, cv, col_goals_idgoals+"=1", null);
+        db.close();
     }
 
     // TODO: allow null entries on all the methods
     // Add ingredient
-    public void addIngredient(String name, float[] macros, boolean[] givenMacros) {
+    public void addIngredient(String name, float[] macros, boolean[] givenMacros, String barcodeformat, String barcodecontent) {
         ContentValues cv = new ContentValues();
 
         cv.putNull(col_ingredient_idingredient);
@@ -264,6 +274,9 @@ public class DBManager extends SQLiteOpenHelper {
             cv.putNull(col_goals_fiber);
         }
 
+        cv.put(col_ingredient_barcodeformat, barcodeformat);
+        cv.put(col_ingredient_barcodecontent, barcodecontent);
+
         SQLiteDatabase db = getWritableDatabase();
         db.insert(tb_ingredient, null, cv);
         db.close();
@@ -275,16 +288,26 @@ public class DBManager extends SQLiteOpenHelper {
         Cursor cursor;
         cursor = db.rawQuery(query, null);
         // its handled automaticly by the CursorAdapter
-        //db.close();
+        db.close();
 
         return cursor;
     }
 
     public Cursor getIngredients(int _id) {
         SQLiteDatabase db = getWritableDatabase();
-        String query = "select * from " + tb_ingredient + " where _id =" + _id;
+        String query = "select * from " + tb_ingredient + " where " + col_ingredient_idingredient + " = " + _id;
         Cursor cursor;
         cursor = db.rawQuery(query, null);
+
+        return cursor;
+    }
+
+    public Cursor getIngredients(String barcodeformat, String barcodecontent) {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "select * from " + tb_ingredient + " where " + col_ingredient_barcodeformat + " = '" + barcodeformat +
+                "' and " + col_ingredient_barcodecontent + " = '" + barcodecontent + "';";
+        Cursor cursor = db.rawQuery(query, null);
+        db.close();
 
         return cursor;
     }
@@ -322,13 +345,14 @@ public class DBManager extends SQLiteOpenHelper {
         }
 
         db.update(tb_ingredient, cv, col_ingredient_idingredient+ "=" +_id, null);
+        db.close();
     }
 
 
-    // TODO: implement method in layout
     public void deleteIngredient(int _id) {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(tb_ingredient, col_ingredient_idingredient+"="+ _id, null);
+        db.close();
     }
 
 

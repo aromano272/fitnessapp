@@ -16,7 +16,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 public class  MainActivity extends AppCompatActivity {
+    private static int RESULT_UPDATE_GOALS = 1;
+    private static int RESULT_ADD_INGREDIENT = 2;
+    private static int RESULT_EDIT_INGREDIENT = 3;
+
     TextView tv_remainingcalories;
     ListView lv_food;
     ListView lv_consumed;
@@ -35,6 +42,9 @@ public class  MainActivity extends AppCompatActivity {
         populateDiaryList();
         populateFoodList();
         populateRemainingMacros();
+
+        db.
+
     }
 
     @Override
@@ -127,12 +137,21 @@ public class  MainActivity extends AppCompatActivity {
 
     private void launchSettingsActivity() {
         Intent intent = new Intent(this, SettingsActivity.class);
-        startActivityForResult(intent, 1);
+        startActivityForResult(intent, RESULT_UPDATE_GOALS);
     }
 
     private void launchAddFoodActivity() {
         Intent intent = new Intent(this, AddFoodActivity.class);
-        startActivityForResult(intent, 2);
+        startActivityForResult(intent, RESULT_ADD_INGREDIENT);
+    }
+
+    private void launchAddFoodActivity(String barcodeformat, String barcodecontent) {
+        Intent intent = new Intent(this, AddFoodActivity.class);
+        Bundle extras = new Bundle();
+        extras.putString("barcodeformat", barcodeformat);
+        extras.putString("barcodecontent", barcodecontent);
+        intent.putExtra("extras", extras);
+        startActivityForResult(intent, RESULT_ADD_INGREDIENT);
     }
 
     private void launchEditFoodActivity(int idingredient) {
@@ -156,7 +175,7 @@ public class  MainActivity extends AppCompatActivity {
             extras.putFloatArray("macros", macros);
             // TODO: use putExtras which dont require a key
             intent.putExtra("extras", extras);
-            startActivityForResult(intent, 3);
+            startActivityForResult(intent, RESULT_EDIT_INGREDIENT);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -164,27 +183,63 @@ public class  MainActivity extends AppCompatActivity {
         }
     }
 
+    private void launchScanBarcodeActivity() {
+        IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
+        integrator.setPrompt("Scan a barcode");
+        integrator.setCameraId(0);  // Use a specific camera of the device
+        integrator.setCaptureActivity(CaptureActivityAnyOrientation.class);
+        integrator.setOrientationLocked(false);
+        integrator.setBeepEnabled(false);
+        integrator.setBarcodeImageEnabled(true);
+        integrator.initiateScan();
+    }
+
+    private void handleBarcodeScanResult(IntentResult scanResult) {
+        String barcodeformat = scanResult.getFormatName();
+        String barcodecontent = scanResult.getContents();
+        Cursor cursor = db.getIngredients(barcodeformat, barcodecontent);
+
+        if(cursor.moveToNext()) {
+            Log.d("barcode found", "true");
+            // ingredient found, add to diary
+            int _id = cursor.getInt(cursor.getColumnIndex("_id"));
+            // TODO: show a sort of dialog of popup with the ingredient before adding
+
+            float servings = 0;
+            db.addDiaryEntry(servings, _id);
+
+        } else {
+            // not found, prompt to create a new one
+            // TODO: ask if user wants to add new ingredient or update an existing one
+            launchAddFoodActivity(barcodeformat, barcodecontent);
+        }
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
+        if (requestCode == RESULT_UPDATE_GOALS) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 Bundle extras = data.getBundleExtra("extras");
                 float[] macros = extras.getFloatArray("macros");
 
                 db.updateGoals(macros);
             }
-        } else if (requestCode == 2) {
+        } else if (requestCode == RESULT_ADD_INGREDIENT) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 Bundle extras = data.getBundleExtra("extras");
                 String name = extras.getString("name");
                 float[] macros = extras.getFloatArray("macros");
                 boolean[] givenMacros = extras.getBooleanArray("givenMacros");
+                String barcodeformat = extras.getString("barcodeformat");
+                String barcodecontent = extras.getString("barcodecontent");
 
-                db.addIngredient(name, macros, givenMacros);
+                db.addIngredient(name, macros, givenMacros, barcodeformat, barcodecontent);
 
                 populateFoodList();
             }
-        } else if (requestCode == 3) {
+        } else if (requestCode == RESULT_EDIT_INGREDIENT) {
             if(resultCode == Activity.RESULT_OK && data != null) {
                 Bundle extras = data.getBundleExtra("extras");
                 int _id = extras.getInt("_id");
@@ -195,11 +250,22 @@ public class  MainActivity extends AppCompatActivity {
                 db.updateIngredient(_id, name, macros, givenMacros);
 
                 populateFoodList();
+                // TODO: remainingmacros only updating if populatediarylist is called
+                //populateDiaryList();
+
+                populateRemainingMacros();
             } else if(resultCode == 2 && data != null) {
                 db.deleteIngredient(data.getIntExtra("_id", -1));
                 populateFoodList();
                 populateDiaryList();
                 populateRemainingMacros();
+            }
+        } else if (requestCode == IntentIntegrator.REQUEST_CODE) {
+            if(resultCode == Activity.RESULT_OK && data != null) {
+                IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+                if(scanResult != null) {
+                    handleBarcodeScanResult(scanResult);
+                }
             }
         }
     }
@@ -214,7 +280,10 @@ public class  MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_addFood:
+            case R.id.menu_scan_barcode:
+                launchScanBarcodeActivity();
+                return true;
+            case R.id.menu_add_food:
                 launchAddFoodActivity();
                 return true;
             case R.id.menu_settings:
