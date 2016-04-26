@@ -1,11 +1,17 @@
 package com.example.aromano.fitnessapp;
 
 import android.app.Activity;
+import android.app.DialogFragment;
+import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,16 +25,24 @@ import android.widget.TextView;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 public class  MainActivity extends AppCompatActivity {
     private static int RESULT_UPDATE_GOALS = 1;
     private static int RESULT_ADD_INGREDIENT = 2;
     private static int RESULT_EDIT_INGREDIENT = 3;
 
+
+
     TextView tv_remainingcalories;
+    TextView tv_remainingprotein;
+    TextView tv_remainingcarbs;
+    TextView tv_remainingfats;
+    TextView tv_remainingfiber;
     ListView lv_food;
     ListView lv_consumed;
-    DBManager db = new DBManager(this);
-
+    DBManager db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,22 +50,27 @@ public class  MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_view2);
 
         tv_remainingcalories = (TextView) findViewById(R.id.tv_remainingcalories);
+        tv_remainingprotein = (TextView) findViewById(R.id.tv_remainingprotein);
+        tv_remainingcarbs = (TextView) findViewById(R.id.tv_remainingcarbs);
+        tv_remainingfats = (TextView) findViewById(R.id.tv_remainingfats);
+        tv_remainingfiber = (TextView) findViewById(R.id.tv_remainingfiber);
         lv_food = (ListView) findViewById(R.id.lv_food);
         lv_consumed = (ListView) findViewById(R.id.lv_consumed);
+
+        db = DBManager.getInstance(this);
 
         populateDiaryList();
         populateFoodList();
         populateRemainingMacros();
-
-        db.
-
     }
+
 
     @Override
     protected void onStart() {
         super.onStart();
 
     }
+
     // TODO: extend the functionality to display full macros
     private void populateRemainingMacros() {
         float[] goals = db.getGoals();
@@ -71,29 +90,34 @@ public class  MainActivity extends AppCompatActivity {
         }
         cursor.close();
 
-        tv_remainingcalories.setText(String.valueOf(calories));
+        tv_remainingcalories.setText(String.valueOf((int)calories));
+        tv_remainingprotein.setText(String.valueOf((int)protein));
+        tv_remainingcarbs.setText(String.valueOf((int)carbs));
+        tv_remainingfats.setText(String.valueOf((int)fats));
+        tv_remainingfiber.setText(String.valueOf((int)fiber));
     }
 
 
     CursorAdapter foodAdapter;
 
     private void populateFoodList() {
-        foodAdapter = new FoodAdapter(this, db.getIngredients(), 0);
+        if(foodAdapter == null) {
+            foodAdapter = new FoodAdapter(this, db.getIngredients(), 0);
+        }
+        foodAdapter.changeCursor(db.getIngredients());
         lv_food.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             // TODO: fix the double click sound when adding item, maybe 2 onClicks are being triggered
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int clickedView = view.getId();
-                // a view enviado pelo performItemClick eh a view do btn_add, logo temos que ir ao parent para conseguirmos aceder ao et_servings
-                // de cada listitem, utilizando o parent passado no onItemClick nao conseguimos la chegar
+                // the view sent by performItemClick is the btn_add view, there for we have to go to the parent to be
+                // able to access the et_servings of each listitem, using parent argument from onItemClick doesnt seem to work
                 View parentView = (View) view.getParent();
                 EditText et_servings = (EditText) parentView.findViewById(R.id.et_servings);
                 Cursor cursor = (Cursor) lv_food.getItemAtPosition(position);
 
 
                 if(clickedView == R.id.btn_add) {
-                    // get the data from the id sent from performItemClick(), ugly but works
-                    //float servings = ((float) id) / 100;
                     float servings = Float.parseFloat(et_servings.getText().toString());
                     Log.d("et_servings", String.valueOf(servings));
 
@@ -120,7 +144,12 @@ public class  MainActivity extends AppCompatActivity {
     CursorAdapter diaryAdapter;
 
     private void populateDiaryList() {
-        diaryAdapter = new DiaryAdapter(this, db.getTodayDiaryEntries(), 0);
+        if(diaryAdapter == null) {
+            diaryAdapter = new DiaryAdapter(this, db.getTodayDiaryEntries(), 0);
+        }
+        // i use changeCursor so whenever i want to refresh the list i request a new cursor and delete the old one with changeCursor
+        // another option would have been to make the DBManager return a List instead of a cursor, that way i could close the cursor on DBManager itself
+        diaryAdapter.changeCursor(db.getTodayDiaryEntries());
         lv_consumed.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -203,18 +232,70 @@ public class  MainActivity extends AppCompatActivity {
         if(cursor.moveToNext()) {
             Log.d("barcode found", "true");
             // ingredient found, add to diary
-            int _id = cursor.getInt(cursor.getColumnIndex("_id"));
+            final int _id = cursor.getInt(cursor.getColumnIndex("_id"));
             // TODO: show a sort of dialog of popup with the ingredient before adding
 
-            float servings = 0;
-            db.addDiaryEntry(servings, _id);
+            //DialogFragment newFrag = new CustomDialogs.selectServings();
+            //newFrag.show(getFragmentManager(), "frag1");
+            LayoutInflater inflater = this.getLayoutInflater();
+            View layout = inflater.inflate(R.layout.dialog_select_servings, null);
+            final TextView tv_decreaseServings = (TextView) layout.findViewById(R.id.tv_decreaseServings);
+            final TextView tv_increaseServings = (TextView) layout.findViewById(R.id.tv_increaseServings);
+            final EditText et_servings = (EditText) layout.findViewById(R.id.et_servings);
 
+            tv_decreaseServings.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    double servings = Double.parseDouble(et_servings.getText().toString());
+                    servings -= 0.05d;
+
+                    DecimalFormat df = new DecimalFormat("#.##");
+                    df.setRoundingMode(RoundingMode.HALF_EVEN);
+
+                    et_servings.setText(df.format(servings));
+                }
+            });
+
+            tv_increaseServings.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    double servings = Double.parseDouble(et_servings.getText().toString());
+                    servings += 0.05d;
+
+                    DecimalFormat df = new DecimalFormat("#.##");
+                    df.setRoundingMode(RoundingMode.HALF_EVEN);
+
+                    et_servings.setText(df.format(servings));
+                }
+            });
+
+            AlertDialog alert = new AlertDialog.Builder(this)
+            .setTitle("Add to diary: " + cursor.getString(cursor.getColumnIndex("name")))
+            .setView(layout)
+            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    float servings = Float.parseFloat(et_servings.getText().toString());
+                    db.addDiaryEntry(servings, _id);
+
+                    populateDiaryList();
+                    populateRemainingMacros();
+                }
+            })
+            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // dont delete
+                    dialog.dismiss();
+                }
+            }).create();
+            alert.show();
         } else {
             // not found, prompt to create a new one
             // TODO: ask if user wants to add new ingredient or update an existing one
             launchAddFoodActivity(barcodeformat, barcodecontent);
         }
-
+        cursor.close();
     }
 
     @Override
@@ -299,10 +380,13 @@ public class  MainActivity extends AppCompatActivity {
 
     // debug
     public void debug_printSQLTables() {
-        Cursor cursorIngredients = db.getIngredients();
-        Cursor cursorDiary = db.getTodayDiaryEntries();
+        SQLiteDatabase debug_db = db.getWritableDatabase();
+        Cursor cursorIngredients = debug_db.rawQuery("select * from tb_ingredient", null);
+        Cursor cursorDiary = debug_db.rawQuery("select * from tb_diary", null);
+        Cursor cursorGoals = debug_db.rawQuery("select * from tb_goals", null);
 
-        db.debug_printTable(cursorDiary);
         db.debug_printTable(cursorIngredients);
+        db.debug_printTable(cursorDiary);
+        db.debug_printTable(cursorGoals);
     }
 }

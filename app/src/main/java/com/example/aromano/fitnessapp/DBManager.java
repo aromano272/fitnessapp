@@ -8,33 +8,28 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 /**
  * Created by aRomano on 01/04/2016.
  */
 public class DBManager extends SQLiteOpenHelper {
-    //TODO: add a way to close database on MainActivity after handling a cursor
-    //http://stackoverflow.com/questions/13249129/close-the-cursor-and-db-when-use-the-sqlite-database
-    private static DBManager sInstance;
-
-    // ...
+    private static DBManager instance;
+    private static SQLiteDatabase db;
 
     public static synchronized DBManager getInstance(Context context) {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
         // See this article for more information: http://bit.ly/6LRzfx
-        if (sInstance == null) {
-            sInstance = new DBManager(context.getApplicationContext());
+        if (instance == null) {
+            instance = new DBManager(context.getApplicationContext());
         }
-        return sInstance;
+        return instance;
     }
 
     private static final int wakeupTime = 8;
 
-    private static final int DATABASE_VERSION = 35;
+    private static final int DATABASE_VERSION = 36;
     private static final String DATABASE_NAME = "fitnessapp.db";
     // tb_ingredient
     public static final String tb_ingredient = "tb_ingredient";
@@ -68,6 +63,7 @@ public class DBManager extends SQLiteOpenHelper {
 
     public DBManager(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        db = getWritableDatabase();
     }
 
 
@@ -125,6 +121,26 @@ public class DBManager extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+        db.setForeignKeyConstraintsEnabled(true);
+    }
+
+    /*                 this is needed if we plan to support versions prior to 4.1
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        // apparently the fucking foreign keys are disabled by default on sqlite herp derp...
+        // so that explains why delete wasnt cascading
+        // http://stackoverflow.com/questions/2545558/foreign-key-constraints-in-android-using-sqlite-on-delete-cascade
+        // starting from 4.1 we can enable foreignkeys by default on onConfigure
+        if(!db.isReadOnly()) {
+            db.execSQL("PRAGMA foreign_keys=ON;");
+        }
+    }
+    */
+
     // TODO: change this so it accepts a date as a parameter, and displays that day's diary
     // Get today diary macros
     public Cursor getTodayDiaryEntries() {
@@ -151,7 +167,7 @@ public class DBManager extends SQLiteOpenHelper {
 
         String targetTimestamp = targetDate + " " + targetHour + ":00:00";
 
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         String query = "select " +
                 "tb_diary._id as '_id'," +
                 "name as 'ingredientname'," +
@@ -166,7 +182,6 @@ public class DBManager extends SQLiteOpenHelper {
                 "where date > '" + targetTimestamp + "';";
 
         Cursor cursor = db.rawQuery(query, null);
-        db.close();
 
         return cursor;
     }
@@ -181,24 +196,24 @@ public class DBManager extends SQLiteOpenHelper {
         cv.put(col_diary_servings, servings);
         cv.put(col_diary_idingredient, idingredient);
 
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         db.insert(tb_diary, null, cv);
 
-        db.close();
+        //db.close();
     }
 
     // Delete diary entry
     public void deleteDiaryEntry(int _id) {
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
 
         db.delete(tb_diary, col_diary_iddiary+"="+_id, null);
-        db.close();
+        //db.close();
     }
 
 
     // Get goals
     public float[] getGoals() {
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         String query = "select * from " + tb_goals + " where 1";
 
         float[] macros = new float[5];
@@ -217,10 +232,11 @@ public class DBManager extends SQLiteOpenHelper {
                 macros[3] = fats;
                 macros[4] = fiber;
             }
+            c.close();
         } catch (Exception ex) {
 
         } finally {
-            db.close();
+            //db.close();
         }
 
         return macros;
@@ -235,9 +251,9 @@ public class DBManager extends SQLiteOpenHelper {
         cv.put(col_goals_fats, macros[3]);
         cv.put(col_goals_fiber, macros[4]);
 
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         db.update(tb_goals, cv, col_goals_idgoals+"=1", null);
-        db.close();
+        //db.close();
     }
 
     // TODO: allow null entries on all the methods
@@ -273,47 +289,54 @@ public class DBManager extends SQLiteOpenHelper {
         } else {
             cv.putNull(col_goals_fiber);
         }
+        if(barcodeformat.isEmpty()) {
+            cv.putNull(col_ingredient_barcodeformat);
+            Log.d("barcodeformat", "putting null");
+        } else{
+            cv.put(col_ingredient_barcodeformat, barcodeformat);
+            Log.d("barcodeformat", "putting value: " + barcodeformat);
+        }
+        if(barcodecontent.isEmpty()) {
+            cv.putNull(col_ingredient_barcodecontent);
+            Log.d("barcodecontent", "putting null");
+        } else {
+            cv.put(col_ingredient_barcodecontent, barcodecontent);
+            Log.d("barcodeformat", "putting value: " + barcodecontent);
+        }
 
-        cv.put(col_ingredient_barcodeformat, barcodeformat);
-        cv.put(col_ingredient_barcodecontent, barcodecontent);
-
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         db.insert(tb_ingredient, null, cv);
-        db.close();
+        //db.close();
     }
 
     public Cursor getIngredients() {
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         String query = "select * from " + tb_ingredient + " where 1";
         Cursor cursor;
         cursor = db.rawQuery(query, null);
-        // its handled automaticly by the CursorAdapter
-        db.close();
 
         return cursor;
     }
 
     public Cursor getIngredients(int _id) {
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         String query = "select * from " + tb_ingredient + " where " + col_ingredient_idingredient + " = " + _id;
-        Cursor cursor;
-        cursor = db.rawQuery(query, null);
+        Cursor cursor = db.rawQuery(query, null);
 
         return cursor;
     }
 
     public Cursor getIngredients(String barcodeformat, String barcodecontent) {
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         String query = "select * from " + tb_ingredient + " where " + col_ingredient_barcodeformat + " = '" + barcodeformat +
                 "' and " + col_ingredient_barcodecontent + " = '" + barcodecontent + "';";
         Cursor cursor = db.rawQuery(query, null);
-        db.close();
 
         return cursor;
     }
 
     public void updateIngredient(int _id, String name, float[] macros, boolean[] givenMacros) {
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
 
         cv.put(col_ingredient_name, name);
@@ -345,14 +368,14 @@ public class DBManager extends SQLiteOpenHelper {
         }
 
         db.update(tb_ingredient, cv, col_ingredient_idingredient+ "=" +_id, null);
-        db.close();
+        //db.close();
     }
 
 
     public void deleteIngredient(int _id) {
-        SQLiteDatabase db = getWritableDatabase();
+        //SQLiteDatabase db = getWritableDatabase();
         db.delete(tb_ingredient, col_ingredient_idingredient+"="+ _id, null);
-        db.close();
+        //db.close();
     }
 
 

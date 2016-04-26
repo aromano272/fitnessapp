@@ -84,7 +84,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void saveGoals() {
-        float calories = Float.parseFloat(et_calories.getText().toString());
+        float calories;
         float protein = Float.parseFloat(et_protein.getText().toString());
         float carbs = Float.parseFloat(et_carbs.getText().toString());
         float fats = Float.parseFloat(et_fats.getText().toString());
@@ -92,9 +92,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         if(byCalories) {
             // protein, carbs, fats are percentages of those calories, / 100 so we can input 40% and it translates into * 0.4
-            protein = (calories / 4) * (protein / 100);
-            carbs = (calories / 4) * (carbs / 100);
-            fats = (calories / 9) * (fats / 100);
+            calories = Float.parseFloat(et_calories.getText().toString());
+            protein = (calories * (protein / 100)) / 4;
+            carbs = (calories * (carbs / 100)) / 4;
+            fats = (calories * (fats / 100)) / 9;
         } else {
             calories = (protein * 4) + (carbs * 4) + (fats * 9);
         }

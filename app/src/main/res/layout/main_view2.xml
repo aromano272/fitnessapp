@@ -3,17 +3,66 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/tv_remainingcalories"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#E0E0E0"
-        android:text="Kcals"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:textAlignment="viewEnd"
-        android:textSize="40sp"/>
+        android:background="#E0E0E0">
+
+        <TextView
+            android:id="@+id/tv_remainingprotein"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:text="30"
+            android:textColor="@color/colorPrimary"
+            android:textSize="25sp"
+            android:layout_gravity="center"
+            />
+
+        <TextView
+            android:id="@+id/tv_remainingcarbs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="30"
+            android:textColor="@color/colorPrimary"
+            android:textSize="25sp"
+            android:layout_gravity="center"
+            />
+
+        <TextView
+            android:id="@+id/tv_remainingfats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="30"
+            android:textColor="@color/colorPrimary"
+            android:textSize="25sp"
+            android:layout_gravity="center"
+            />
+
+        <TextView
+            android:id="@+id/tv_remainingfiber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="30"
+            android:textColor="@color/colorPrimary"
+            android:textSize="25sp"
+            android:layout_gravity="center"
+            />
+
+        <TextView
+            android:id="@+id/tv_remainingcalories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kcals"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:textAlignment="viewEnd"
+            android:gravity="right"
+            android:textSize="40sp"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
