@@ -9,6 +9,7 @@ import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.Exchanger;
 
 /**
  * Created by aRomano on 01/04/2016.
@@ -42,6 +43,7 @@ public class DBManager extends SQLiteOpenHelper {
     public static final String col_ingredient_fiber = "fiber";
     public static final String col_ingredient_barcodeformat = "barcodeformat";
     public static final String col_ingredient_barcodecontent = "barcodecontent";
+    public static final String col_ingredient_count = "count";
 
     // tb_diary
     public static final String tb_diary = "tb_diary";
@@ -78,7 +80,8 @@ public class DBManager extends SQLiteOpenHelper {
                 col_ingredient_fats + " float," +
                 col_ingredient_fiber + " float," +
                 col_ingredient_barcodeformat + " varchar(20)," +
-                col_ingredient_barcodecontent + " varchar(20) unique" +
+                col_ingredient_barcodecontent + " varchar(20) unique," +
+                col_ingredient_count + " int not null default 0" +
                 ");";
         String create_tb_diary = "create table " + tb_diary + " (" +
                 col_diary_iddiary + " integer primary key," +
@@ -179,7 +182,7 @@ public class DBManager extends SQLiteOpenHelper {
                 "round(fats * servings, 1) as 'fats'," +
                 "round(fiber * servings, 1) as 'fiber' from tb_diary " +
                 "inner join tb_ingredient on tb_diary.idingredient = tb_ingredient._id " +
-                "where date > '" + targetTimestamp + "';";
+                "where date > '" + targetTimestamp + "' order by _id desc;";
 
         Cursor cursor = db.rawQuery(query, null);
 
@@ -198,6 +201,7 @@ public class DBManager extends SQLiteOpenHelper {
 
         //SQLiteDatabase db = getWritableDatabase();
         db.insert(tb_diary, null, cv);
+        increaseIngredientCount(idingredient);
 
         //db.close();
     }
@@ -205,9 +209,34 @@ public class DBManager extends SQLiteOpenHelper {
     // Delete diary entry
     public void deleteDiaryEntry(int _id) {
         //SQLiteDatabase db = getWritableDatabase();
+        Cursor c = db.rawQuery(String.format("select idingredient from %s where _id = %s;", tb_diary, _id), null);
+
+        while(c.moveToNext()) {
+            int idingredient = c.getInt(c.getColumnIndex("idingredient"));
+            decreaseIngredientCount(idingredient);
+        }
+        c.close();
 
         db.delete(tb_diary, col_diary_iddiary+"="+_id, null);
         //db.close();
+    }
+
+    public void increaseIngredientCount(int idingredient) {
+        try {
+            db.execSQL(String.format("update %s set %s = %s + 1 where _id = %s",
+                    tb_ingredient, col_ingredient_count, col_ingredient_count, idingredient));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void decreaseIngredientCount(int idingredient) {
+        try {
+            db.execSQL(String.format("update %s set %s = %s - 1 where _id = %s",
+                    tb_ingredient, col_ingredient_count, col_ingredient_count, idingredient));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -311,7 +340,7 @@ public class DBManager extends SQLiteOpenHelper {
 
     public Cursor getIngredients() {
         //SQLiteDatabase db = getWritableDatabase();
-        String query = "select * from " + tb_ingredient + " where 1";
+        String query = String.format("select * from %s where 1 order by count desc;", tb_ingredient);
         Cursor cursor;
         cursor = db.rawQuery(query, null);
 
@@ -320,7 +349,7 @@ public class DBManager extends SQLiteOpenHelper {
 
     public Cursor getIngredients(int _id) {
         //SQLiteDatabase db = getWritableDatabase();
-        String query = "select * from " + tb_ingredient + " where " + col_ingredient_idingredient + " = " + _id;
+        String query = "select * from " + tb_ingredient + " where " + col_ingredient_idingredient + " = " + _id + "";
         Cursor cursor = db.rawQuery(query, null);
 
         return cursor;
@@ -380,7 +409,6 @@ public class DBManager extends SQLiteOpenHelper {
 
 
     // DEBUG
-
     public void debug_printTable(Cursor cursor) {
         try {
             while(cursor.moveToNext()) {

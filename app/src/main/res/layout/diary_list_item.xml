@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent">
+
+    <TextView
+        android:id="@+id/tv_quantity"
+        android:layout_marginStart="6dp"
+        android:layout_marginLeft="6dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="#BDBDBD"
+        android:text="Default"
+        android:layout_gravity="start|center_vertical"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_marginStart="6dp"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:text="Default"
+        android:layout_gravity="start|center_vertical" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/tv_protein"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_marginRight="6dp"
+        android:layout_marginEnd="6dp"
+        android:text="500"
+        android:textSize="17sp"
+        android:textColor="@color/colorPrimary"
+        />
+
+    <TextView
+        android:id="@+id/tv_calories"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_marginRight="6dp"
+        android:layout_marginEnd="6dp"
+        android:text="500"
+        android:textSize="17sp"
+        android:textColor="#BDBDBD"
+        />
+
+    <Button
+        android:id="@+id/btn_remove"
+        android:layout_width="70dp"
+        android:layout_height="match_parent"
+        android:text="REMOVE"
+        android:background="#F44336"
+        android:textColor="#fff"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:focusable="false"
+        />
+
+    <!--<TextView-->
+        <!--android:layout_width="70dp"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:text="REMOVE"-->
+        <!--android:background="#F44336"-->
+        <!--android:textColor="#fff"-->
+        <!--android:gravity="center"-->
+        <!--android:textStyle="bold" />-->
+
+
+
+</LinearLayout>

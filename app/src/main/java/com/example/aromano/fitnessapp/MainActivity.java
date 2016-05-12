@@ -103,6 +103,7 @@ public class  MainActivity extends AppCompatActivity {
     private void populateFoodList() {
         if(foodAdapter == null) {
             foodAdapter = new FoodAdapter(this, db.getIngredients(), 0);
+            lv_food.setAdapter(foodAdapter);
         }
         foodAdapter.changeCursor(db.getIngredients());
         lv_food.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -138,29 +139,35 @@ public class  MainActivity extends AppCompatActivity {
             }
         });
 
-        lv_food.setAdapter(foodAdapter);
+
     }
 
     CursorAdapter diaryAdapter;
 
+    // TODO: make it possible to edit diary entry
     private void populateDiaryList() {
         if(diaryAdapter == null) {
             diaryAdapter = new DiaryAdapter(this, db.getTodayDiaryEntries(), 0);
+            lv_consumed.setAdapter(diaryAdapter);
         }
         // i use changeCursor so whenever i want to refresh the list i request a new cursor and delete the old one with changeCursor
         // another option would have been to make the DBManager return a List instead of a cursor, that way i could close the cursor on DBManager itself
         diaryAdapter.changeCursor(db.getTodayDiaryEntries());
+        // TODO: add dialog to confirm diary delete
+
         lv_consumed.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO: maybe move this db method inside the adapter
                 Cursor cursor = (Cursor) lv_consumed.getItemAtPosition(position);
                 db.deleteDiaryEntry(cursor.getInt(cursor.getColumnIndex("_id")));
 
                 populateDiaryList();
                 populateRemainingMacros();
+
             }
         });
-        lv_consumed.setAdapter(diaryAdapter);
+
     }
 
 
@@ -256,6 +263,20 @@ public class  MainActivity extends AppCompatActivity {
                 }
             });
 
+            tv_decreaseServings.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    double servings = Double.parseDouble(et_servings.getText().toString());
+                    servings -= 1d;
+
+                    DecimalFormat df = new DecimalFormat("#.##");
+                    df.setRoundingMode(RoundingMode.HALF_EVEN);
+
+                    et_servings.setText(df.format(servings));
+                    return false;
+                }
+            });
+
             tv_increaseServings.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -266,6 +287,20 @@ public class  MainActivity extends AppCompatActivity {
                     df.setRoundingMode(RoundingMode.HALF_EVEN);
 
                     et_servings.setText(df.format(servings));
+                }
+            });
+
+            tv_increaseServings.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    double servings = Double.parseDouble(et_servings.getText().toString());
+                    servings += 1d;
+
+                    DecimalFormat df = new DecimalFormat("#.##");
+                    df.setRoundingMode(RoundingMode.HALF_EVEN);
+
+                    et_servings.setText(df.format(servings));
+                    return false;
                 }
             });
 
@@ -382,7 +417,7 @@ public class  MainActivity extends AppCompatActivity {
     public void debug_printSQLTables() {
         SQLiteDatabase debug_db = db.getWritableDatabase();
         Cursor cursorIngredients = debug_db.rawQuery("select * from tb_ingredient", null);
-        Cursor cursorDiary = debug_db.rawQuery("select * from tb_diary", null);
+        Cursor cursorDiary = debug_db.rawQuery("select * from tb_diary order by _id desc", null);
         Cursor cursorGoals = debug_db.rawQuery("select * from tb_goals", null);
 
         db.debug_printTable(cursorIngredients);

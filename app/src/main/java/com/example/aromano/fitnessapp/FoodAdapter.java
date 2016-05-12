@@ -45,6 +45,21 @@ public class FoodAdapter extends ResourceCursorAdapter {
             }
         });
 
+        btn_decreaseServings.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                double servings = Double.parseDouble(et_servings.getText().toString());
+                servings -= 1d;
+
+                DecimalFormat df = new DecimalFormat("#.##");
+                df.setRoundingMode(RoundingMode.HALF_EVEN);
+
+                et_servings.setText(df.format(servings));
+                // return true so it stops event propagation
+                return true;
+            }
+        });
+
         btn_increaseServings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -55,6 +70,21 @@ public class FoodAdapter extends ResourceCursorAdapter {
                 df.setRoundingMode(RoundingMode.HALF_EVEN);
 
                 et_servings.setText(df.format(servings));
+            }
+        });
+
+        btn_increaseServings.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                double servings = Double.parseDouble(et_servings.getText().toString());
+                servings += 1d;
+
+                DecimalFormat df = new DecimalFormat("#.##");
+                df.setRoundingMode(RoundingMode.HALF_EVEN);
+
+                et_servings.setText(df.format(servings));
+                // return true so it stops event propagation
+                return true;
             }
         });
 
