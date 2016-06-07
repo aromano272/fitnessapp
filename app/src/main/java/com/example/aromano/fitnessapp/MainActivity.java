@@ -106,6 +106,8 @@ public class  MainActivity extends AppCompatActivity {
             lv_food.setAdapter(foodAdapter);
         }
         foodAdapter.changeCursor(db.getIngredients());
+
+        lv_food.setSoundEffectsEnabled(false);
         lv_food.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             // TODO: fix the double click sound when adding item, maybe 2 onClicks are being triggered
             @Override
@@ -155,14 +157,12 @@ public class  MainActivity extends AppCompatActivity {
         diaryAdapter.changeCursor(db.getTodayDiaryEntries());
         // TODO: add dialog to confirm diary delete
 
+        // disables soundeffects triggered by performItemClick on the adapter, leaving only the dialog buttons to make sound
+        lv_consumed.setSoundEffectsEnabled(false);
         lv_consumed.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: maybe move this db method inside the adapter
-                Cursor cursor = (Cursor) lv_consumed.getItemAtPosition(position);
-                db.deleteDiaryEntry(cursor.getInt(cursor.getColumnIndex("_id")));
-
-                populateDiaryList();
+                //populateDiaryList();
                 populateRemainingMacros();
 
             }
